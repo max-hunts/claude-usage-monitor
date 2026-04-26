@@ -51,12 +51,6 @@ sudo cp ~/.cargo/bin/claude-usage-monitor /usr/local/bin/
 
 Click the menu bar icon. If the plugin can't run the binary, the dropdown now shows the exact path it searched, the `PATH` SwiftBar saw, and the binary's stderr — paste that into an issue if it's not obvious.
 
-## Color thresholds
-
-- **5h X%** / **7d Y%** segments turn **orange** (256-color, code 208) at ≥70%, **truecolor pink** (`#D7005F`) at ≥100%.
-
-This is a deliberate workaround for a SwiftBar quirk: truecolor orange in the title renders as black on some macOS versions, while 256-color orange and truecolor pink both render correctly. Mixing the two modes is the cleanest way to get visible color steps.
-
 ## Troubleshooting
 
 - **`claude: ⚠`** in the menu bar → the plugin couldn't run `claude-usage-monitor --json`. Check that the binary is on `PATH` (run `which claude-usage-monitor` from a terminal SwiftBar can see) or set `CLAUDE_USAGE_BIN`.

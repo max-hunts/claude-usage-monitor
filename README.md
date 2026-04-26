@@ -3,16 +3,16 @@
 Live terminal dashboard for your [claude.ai](https://claude.ai) usage — 5-hour window, 7-day window, and Extra Credits — refreshed every 2 seconds.
 
 ```
-                       Claude Usage Monitor   ●  live   claude.ai   ·   e: edit creds  q: quit
+Claude Usage Monitor   ●  live   claude.ai   ·   e: edit creds  q: quit
 
-                                  5h Window   12%   ·   resets in 3h 14m
-                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   5h Window   12%   ·   resets in 3h 14m
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-                                  7d Window   34%   ·   resets in 2d 8h
-                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   7d Window   34%   ·   resets in 2d 8h
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-                              Extra Credits   £4.20 / £20.00   (21.0%)
-                       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   Extra Credits   £4.20 / £20.00   (21.0%)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
 ## How it works
@@ -26,7 +26,7 @@ This is a personal-use tool. You provide your own session cookies; nothing is sh
 Requires Rust 1.85+ and macOS or Linux.
 
 ```sh
-git clone https://github.com/maxhuntdesign/claude-usage-monitor
+git clone https://github.com/max-hunts/claude-usage-monitor
 cd claude-usage-monitor
 cargo build --release
 ./target/release/claude-usage-monitor

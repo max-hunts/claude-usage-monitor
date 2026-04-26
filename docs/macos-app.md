@@ -49,12 +49,3 @@ The `alacritty` and `claude-usage-monitor` binaries are listed in `.gitignore` â
 
 Files copied through `git clone` don't get the `com.apple.quarantine` extended attribute. Files downloaded by Safari/Chrome/`curl` do. Quarantined unsigned apps are blocked by Gatekeeper on modern macOS with no easy workaround for end users.
 
-## Future: signed releases
-
-A proper signed + notarized release would require:
-- An Apple Developer ID (~$99/yr).
-- `codesign --deep --options runtime --sign "Developer ID Application: â€¦"` over the bundle.
-- Notarization via `xcrun notarytool submit`.
-- A GitHub Actions workflow gated on a Developer ID secret.
-
-Not implemented; PRs welcome.
