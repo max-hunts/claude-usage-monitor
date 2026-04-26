@@ -23,9 +23,12 @@ This is a personal-use tool. You provide your own session cookies; nothing is sh
 
 ## Install
 
-Requires Rust 1.85+ and macOS or Linux.
+Requires Rust 1.85+, CMake, and macOS or Linux.
 
 ```sh
+# macOS — install cmake if you don't have it
+brew install cmake
+
 git clone https://github.com/max-hunts/claude-usage-monitor
 cd claude-usage-monitor
 cargo build --release
