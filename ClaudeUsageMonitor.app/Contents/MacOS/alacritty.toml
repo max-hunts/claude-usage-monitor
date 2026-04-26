@@ -1,0 +1,29 @@
+[window]
+decorations = "buttonless"
+dimensions = { columns = 80, lines = 14 }
+padding = { x = 12, y = 12 }
+opacity = 1.0
+
+[font]
+size = 13.0
+
+[font.normal]
+family = "Menlo"
+style = "Regular"
+
+[colors.primary]
+background = "#161B22"
+foreground = "#E6EDF3"
+
+[colors.cursor]
+text = "#161B22"
+cursor = "#E6EDF3"
+
+[mouse]
+hide_when_typing = true
+
+[keyboard]
+bindings = [
+    { key = "Q", mods = "Command", action = "Quit" },
+    { key = "W", mods = "Command", action = "Quit" },
+]

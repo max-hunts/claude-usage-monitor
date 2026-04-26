@@ -1,0 +1,5 @@
+#!/bin/bash
+DIR="$(cd "$(dirname "$0")" && pwd)"
+exec "$DIR/alacritty" \
+    --config-file "$DIR/alacritty.toml" \
+    -e "$DIR/claude-usage-monitor"
