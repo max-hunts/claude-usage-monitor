@@ -1,6 +1,6 @@
 # claude-usage-monitor
 
-[This has been e2e tesed by a human, however, anthripic are playing 5d chess with their client apps, so let;s see how long this repo is useful for...]
+[This has been e2e tesed by a human, however, Anthropic are playing 5d chess with their client apps, so let;s see how long this repo is useful for...]
 
 Live terminal dashboard for your [claude.ai](https://claude.ai) usage — 5-hour window, 7-day window, and Extra Credits — refreshed every 2 seconds.
 
