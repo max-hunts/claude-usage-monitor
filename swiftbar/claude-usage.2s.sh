@@ -79,6 +79,19 @@ five  = d.get("five_hour")  or {}
 seven = d.get("seven_day")  or {}
 extra = d.get("extra_usage") or {}
 
+# Model-scoped weekly limits (e.g. the Fable-only weekly cap) are only reported
+# in the "limits" array, not as a top-level window.
+scoped = []
+for lim in d.get("limits") or []:
+    if lim.get("kind") != "weekly_scoped":
+        continue
+    model = ((lim.get("scope") or {}).get("model") or {})
+    scoped.append({
+        "label":  model.get("display_name") or "Scoped",
+        "pct":    lim.get("percent") or 0,
+        "resets": lim.get("resets_at"),
+    })
+
 # colors (matching TUI)
 ORANGE = "#FF8800"
 DANGER = "#F85149"
@@ -135,15 +148,19 @@ def colorize(text, pct):
     return text
 
 sym = cur_sym(extra.get("currency"))
+# Menu bar space is tight: no space inside a segment, scoped models by initial
+# ("F" for Fable), one currency symbol. The dropdown carries the full labels.
 parts = [
-    colorize(f"5h {five_pct:.0f}%",  five_pct),
-    colorize(f"7d {seven_pct:.0f}%", seven_pct),
+    colorize(f"5h{five_pct:.0f}%",  five_pct),
+    colorize(f"7d{seven_pct:.0f}%", seven_pct),
 ]
+for s in scoped:
+    parts.append(colorize(f"{s['label'][:1].upper()}{s['pct']:.0f}%", s["pct"]))
 if extra.get("is_enabled"):
     used  = (extra.get("used_credits") or 0) / 100
     limit = (extra.get("monthly_limit") or 0) / 100
-    parts.append(f"{sym}{used:.2f}/{sym}{limit:.2f}")
-print(f"{' · '.join(parts)} | font='Menlo' size=12 ansi=true trim=false")
+    parts.append(f"{sym}{used:.0f}/{limit:.0f}")
+print(f"{' · '.join(parts)} | font='Menlo' size=12 ansi=true trim=false")
 
 # ------ dropdown ------
 print("---")
@@ -158,6 +175,9 @@ def section(label, pct, reset_iso, value_str=None):
 
 section("5h Window  ", five_pct,  five.get("resets_at"))
 section("7d Window  ", seven_pct, seven.get("resets_at"))
+
+for s in scoped:
+    section(f"7d {s['label']}  ", s["pct"], s["resets"])
 
 if extra.get("is_enabled"):
     used  = (extra.get("used_credits") or 0) / 100

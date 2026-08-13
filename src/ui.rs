@@ -27,38 +27,56 @@ pub fn render(
 ) {
     f.render_widget(Block::default().style(Style::default().bg(BG)), area);
 
+    // 5h window, 7d window, one per model-scoped weekly window, extra credits.
+    let sections = 3 + usage.scoped_weekly.len();
+
+    let mut constraints = vec![
+        Constraint::Length(1), // header
+        Constraint::Min(0),    // top flex
+    ];
+    for i in 0..sections {
+        if i > 0 {
+            constraints.push(Constraint::Length(1)); // spacer
+        }
+        constraints.push(Constraint::Length(3));
+    }
+    constraints.push(Constraint::Min(0)); // bottom flex
+    constraints.push(Constraint::Length(1)); // footer
+
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([
-            Constraint::Length(1), // header
-            Constraint::Min(0),    // top flex
-            Constraint::Length(3), // 5h
-            Constraint::Length(1), // spacer
-            Constraint::Length(3), // 7d
-            Constraint::Length(1), // spacer
-            Constraint::Length(3), // extra credits
-            Constraint::Min(0),    // bottom flex
-            Constraint::Length(1), // footer
-        ])
+        .constraints(constraints)
         .split(area);
+
+    // Section n occupies chunks[2 + 2n]: one spacer sits before every section but the first.
+    let section = |n: usize| chunks[2 + 2 * n];
 
     render_header(f, chunks[0]);
     render_window(
         f,
-        chunks[2],
+        section(0),
         "5h Window",
         usage.five_hour_util,
         usage.five_hour_resets_at.as_deref(),
     );
     render_window(
         f,
-        chunks[4],
+        section(1),
         "7d Window",
         usage.seven_day_util,
         usage.seven_day_resets_at.as_deref(),
     );
-    render_spend(f, chunks[6], usage);
-    render_footer(f, chunks[8], last_updated, error);
+    for (i, scoped) in usage.scoped_weekly.iter().enumerate() {
+        render_window(
+            f,
+            section(2 + i),
+            &format!("7d {}", scoped.label),
+            scoped.util,
+            scoped.resets_at.as_deref(),
+        );
+    }
+    render_spend(f, section(sections - 1), usage);
+    render_footer(f, chunks[chunks.len() - 1], last_updated, error);
 }
 
 fn render_header(f: &mut Frame, area: Rect) {

@@ -3,8 +3,10 @@
 Show your Claude usage percentages in the macOS menu bar, with a TUI-style dropdown of bars and reset countdowns.
 
 ```
-5h 12% · 7d 34% · £4.20/£20.00
+5h12%·7d34%·F61%·£4/20
 ```
+
+Per-model weekly windows (the Fable-only weekly cap, for example) appear automatically whenever the API reports one. The title abbreviates them to the model's initial to save menu bar space (`F61%`); the dropdown spells them out (`7d Fable   61%`).
 
 ## Prerequisites
 

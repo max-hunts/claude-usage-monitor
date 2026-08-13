@@ -2,7 +2,7 @@
 
 [This has been e2e tesed by a human, however, Anthropic are playing 5d chess with their client apps, so let;s see how long this repo is useful for...]
 
-Live terminal dashboard for your [claude.ai](https://claude.ai) usage — 5-hour window, 7-day window, and Extra Credits — refreshed every 2 seconds.
+Live terminal dashboard for your [claude.ai](https://claude.ai) usage — 5-hour window, 7-day window, per-model weekly windows (e.g. Fable), and Extra Credits — refreshed every 2 seconds.
 
 ```
 Claude Usage Monitor   ●  live   claude.ai   ·   e: edit creds  q: quit
@@ -11,6 +11,9 @@ Claude Usage Monitor   ●  live   claude.ai   ·   e: edit creds  q: quit
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    7d Window   34%   ·   resets in 2d 8h
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+   7d Fable   61%   ·   resets in 2d 8h
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
    Extra Credits   £4.20 / £20.00   (21.0%)

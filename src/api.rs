@@ -4,7 +4,7 @@ use rquest_util::Emulation;
 use tokio::runtime::Runtime;
 
 use crate::config::Config;
-use crate::models::{AggregatedUsage, UsageResponse};
+use crate::models::{AggregatedUsage, ScopedWindow, UsageResponse};
 
 pub fn fetch_raw_json(cfg: &Config) -> Result<String> {
     let runtime = tokio::runtime::Builder::new_current_thread()
@@ -100,11 +100,28 @@ impl ApiClient {
 
         let data: UsageResponse = resp.json().await?;
 
+        let scoped_weekly = data
+            .limits
+            .iter()
+            .filter(|l| l.kind == "weekly_scoped")
+            .map(|l| ScopedWindow {
+                label: l
+                    .scope
+                    .as_ref()
+                    .and_then(|s| s.model.as_ref())
+                    .and_then(|m| m.display_name.clone())
+                    .unwrap_or_else(|| "Scoped".to_string()),
+                util: l.percent.unwrap_or(0.0),
+                resets_at: l.resets_at.clone(),
+            })
+            .collect();
+
         let mut aggregated = AggregatedUsage {
             five_hour_util: data.five_hour.utilization,
             five_hour_resets_at: data.five_hour.resets_at,
             seven_day_util: data.seven_day.utilization,
             seven_day_resets_at: data.seven_day.resets_at,
+            scoped_weekly,
             ..Default::default()
         };
 
