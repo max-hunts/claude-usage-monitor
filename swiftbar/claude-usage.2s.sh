@@ -1,8 +1,8 @@
 #!/bin/bash
-# <bitbar.title>Claude Usage</bitbar.title>
-# <bitbar.version>v2.0</bitbar.version>
+# <bitbar.title>Claude + Codex Usage</bitbar.title>
+# <bitbar.version>v3.0</bitbar.version>
 # <bitbar.author>max</bitbar.author>
-# <bitbar.desc>Live Claude usage from claude-usage-monitor --json</bitbar.desc>
+# <bitbar.desc>Live Claude and Codex usage from claude-usage-monitor --json</bitbar.desc>
 # <swiftbar.hideAbout>true</swiftbar.hideAbout>
 # <swiftbar.hideRunInTerminal>true</swiftbar.hideRunInTerminal>
 # <swiftbar.hideDisablePlugin>true</swiftbar.hideDisablePlugin>
@@ -77,7 +77,9 @@ from datetime import datetime, timezone
 d = json.loads(os.environ["JSON"])
 five  = d.get("five_hour")  or {}
 seven = d.get("seven_day")  or {}
-extra = d.get("extra_usage") or {}
+codex = d.get("codex") or {}
+weekly = codex.get("weekly")
+claude_error = d.get("claude_error")
 
 # Model-scoped weekly limits (e.g. the Fable-only weekly cap) are only reported
 # in the "limits" array, not as a top-level window.
@@ -134,12 +136,9 @@ def fmt_reset(iso):
     if h_:  return f"{h_}h {m_}m"
     return f"{m_}m"
 
-def cur_sym(c):
-    return {"GBP": "£", "EUR": "€"}.get(c or "", "$")
-
 # ------ menu bar title ------
-five_pct  = five.get("utilization", 0) or 0
-seven_pct = seven.get("utilization", 0) or 0
+five_pct = five.get("utilization")
+seven_pct = seven.get("utilization")
 def colorize(text, pct):
     if pct >= 100:
         return f"\x1b[38;2;215;0;95m{text}\x1b[0m"  # truecolor pink
@@ -147,25 +146,26 @@ def colorize(text, pct):
         return f"\x1b[38;5;208m{text}\x1b[0m"       # 256-color orange
     return text
 
-sym = cur_sym(extra.get("currency"))
-# Menu bar space is tight: no space inside a segment, scoped models by initial
-# ("F" for Fable), one currency symbol. The dropdown carries the full labels.
-parts = [
-    colorize(f"5h{five_pct:.0f}%",  five_pct),
-    colorize(f"7d{seven_pct:.0f}%", seven_pct),
-]
+# Explicitly distinguish unavailable values from zero usage.
+def title_window(label, pct):
+    return f"{label}—" if pct is None else colorize(f"{label}{pct:.0f}%", pct)
+
+parts = [title_window("5h", five_pct), title_window("7d", seven_pct)]
 for s in scoped:
     parts.append(colorize(f"{s['label'][:1].upper()}{s['pct']:.0f}%", s["pct"]))
-if extra.get("is_enabled"):
-    used  = (extra.get("used_credits") or 0) / 100
-    limit = (extra.get("monthly_limit") or 0) / 100
-    parts.append(f"{sym}{used:.0f}/{limit:.0f}")
+parts.append(title_window("CX", weekly.get("utilization") if weekly else None))
+if claude_error or codex.get("error"):
+    parts.append("⚠")
 print(f"{' · '.join(parts)} | font='Menlo' size=12 ansi=true trim=false")
 
 # ------ dropdown ------
 print("---")
 
 def section(label, pct, reset_iso, value_str=None):
+    if pct is None:
+        print(f"{label}  unavailable | font='Menlo' size=13 color={MUTED}")
+        print(" | size=4")
+        return
     pct_str = f"{pct:.0f}%" if value_str is None else value_str
     rt = fmt_reset(reset_iso)
     suffix = f"  ·  resets in {rt}" if rt else ""
@@ -179,12 +179,12 @@ section("7d Window  ", seven_pct, seven.get("resets_at"))
 for s in scoped:
     section(f"7d {s['label']}  ", s["pct"], s["resets"])
 
-if extra.get("is_enabled"):
-    used  = (extra.get("used_credits") or 0) / 100
-    limit = (extra.get("monthly_limit") or 0) / 100
-    pct   = extra.get("utilization", 0) or 0
-    label_val = f"{sym}{used:.2f} / {sym}{limit:.2f}  ({pct:.1f}%)"
-    section("Extra Credits ", pct, None, value_str=label_val)
+section("Codex Weekly", weekly.get("utilization") if weekly else None,
+        weekly.get("resets_at") if weekly else None)
+for provider, error in [("Claude", claude_error), ("Codex", codex.get("error"))]:
+    if error:
+        safe_error = " ".join(str(error).replace("|", "/").split())
+        print(f"{provider}: {safe_error} | color={DANGER} font='Menlo' size=12")
 PYEOF
 )
 
@@ -192,4 +192,5 @@ echo "$OUT"
 
 echo "---"
 echo "Open Claude usage page | href=https://claude.ai/settings/usage"
+echo "Open Codex usage page | href=https://chatgpt.com/codex/cloud/settings/analytics#usage"
 echo "Refresh | refresh=true"

@@ -1,6 +1,7 @@
 mod api;
 mod config;
 mod models;
+mod monitor;
 mod setup;
 mod ui;
 
@@ -11,17 +12,20 @@ use crossterm::event::{
 use crossterm::execute;
 use ratatui::{init, restore, DefaultTerminal};
 
-use api::ApiClient;
 use config::Config;
-use models::AggregatedUsage;
+use monitor::{Monitor, Snapshot};
 use setup::{SetupForm, SetupOutcome};
 
-const REFRESH: std::time::Duration = std::time::Duration::from_secs(2);
 const TICK: std::time::Duration = std::time::Duration::from_millis(200);
 
 enum AppState {
-    Setup { form: SetupForm },
-    Running { api: ApiClient, usage: AggregatedUsage, last_error: Option<String> },
+    Setup {
+        form: SetupForm,
+    },
+    Running {
+        monitor: Monitor,
+        snapshot: Snapshot,
+    },
 }
 
 fn run_app(terminal: &mut DefaultTerminal) -> Result<()> {
@@ -29,37 +33,41 @@ fn run_app(terminal: &mut DefaultTerminal) -> Result<()> {
 
     let mut state = match Config::load() {
         Some(cfg) => AppState::Running {
-            api: ApiClient::new(cfg)?,
-            usage: AggregatedUsage::default(),
-            last_error: None,
+            monitor: Monitor::start(cfg, true),
+            snapshot: Snapshot::default(),
         },
-        None => AppState::Setup { form: SetupForm::new(None) },
+        None => AppState::Setup {
+            form: SetupForm::new(None),
+        },
     };
 
-    let mut last_fetch = std::time::Instant::now()
-        .checked_sub(REFRESH * 2)
-        .unwrap_or_else(std::time::Instant::now);
-
     loop {
-        if let AppState::Running { api, usage, last_error } = &mut state {
-            if last_fetch.elapsed() >= REFRESH {
-                match api.fetch_usage() {
-                    Ok(u) => {
-                        *usage = u;
-                        *last_error = None;
-                    }
-                    Err(e) => *last_error = Some(e.to_string()),
-                }
-                last_fetch = std::time::Instant::now();
+        if let AppState::Running { monitor, snapshot } = &mut state {
+            for update in monitor.updates.try_iter() {
+                snapshot.apply(update);
             }
         }
 
-        let last_updated = chrono::Local::now().format("%H:%M:%S").to_string();
-
         terminal.draw(|f| match &state {
             AppState::Setup { form } => setup::render(f, f.area(), form),
-            AppState::Running { usage, last_error, .. } => {
-                ui::render(f, f.area(), usage, &last_updated, last_error.as_deref());
+            AppState::Running { snapshot, .. } => {
+                let updated = snapshot
+                    .claude_updated_at
+                    .as_deref()
+                    .and_then(|s| chrono::DateTime::parse_from_rfc3339(s).ok())
+                    .map(|t| {
+                        t.with_timezone(&chrono::Local)
+                            .format("%H:%M:%S")
+                            .to_string()
+                    })
+                    .unwrap_or_else(|| "waiting for usage".into());
+                ui::render(
+                    f,
+                    f.area(),
+                    &snapshot.aggregated(),
+                    &updated,
+                    snapshot.claude_error.as_deref(),
+                );
             }
         })?;
 
@@ -70,13 +78,9 @@ fn run_app(terminal: &mut DefaultTerminal) -> Result<()> {
                         SetupOutcome::Cancel => return Ok(()),
                         SetupOutcome::Saved(cfg) => {
                             state = AppState::Running {
-                                api: ApiClient::new(cfg)?,
-                                usage: AggregatedUsage::default(),
-                                last_error: None,
+                                monitor: Monitor::start(cfg, true),
+                                snapshot: Snapshot::default(),
                             };
-                            last_fetch = std::time::Instant::now()
-                                .checked_sub(REFRESH * 2)
-                                .unwrap_or_else(std::time::Instant::now);
                         }
                         SetupOutcome::Continue => {}
                     },
@@ -127,7 +131,11 @@ fn run_json() -> Result<()> {
     let cfg = Config::load().ok_or_else(|| {
         anyhow::anyhow!("no credentials configured — run claude-usage-monitor first to set them up")
     })?;
-    let body = api::fetch_raw_json(&cfg)?;
-    print!("{}", body);
+    let monitor = Monitor::start(cfg, false);
+    let mut snapshot = Snapshot::default();
+    for update in &monitor.updates {
+        snapshot.apply(update);
+    }
+    println!("{}", snapshot.json());
     Ok(())
 }
