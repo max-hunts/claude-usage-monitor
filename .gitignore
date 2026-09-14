@@ -9,3 +9,6 @@ config.toml
 # build artifacts inside the app bundle (the binary is copied in by scripts/build-app.sh)
 /ClaudeUsageMonitor.app/Contents/MacOS/claude-usage-monitor
 /ClaudeUsageMonitor.app/Contents/MacOS/alacritty
+
+# Python fixture tests
+__pycache__/

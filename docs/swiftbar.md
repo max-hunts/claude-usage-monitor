@@ -1,9 +1,9 @@
 # SwiftBar plugin
 
-Show your Claude usage percentages in the macOS menu bar, with a TUI-style dropdown of bars and reset countdowns.
+Show your Claude and Codex usage percentages in the macOS menu bar, with a TUI-style dropdown of bars and reset countdowns.
 
 ```
-5h12%·7d34%·F61%·£4/20
+5h12%·7d34%·F61%·CX13%
 ```
 
 Per-model weekly windows (the Fable-only weekly cap, for example) appear automatically whenever the API reports one. The title abbreviates them to the model's initial to save menu bar space (`F61%`); the dropdown spells them out (`7d Fable   61%`).
@@ -11,7 +11,7 @@ Per-model weekly windows (the Fable-only weekly cap, for example) appear automat
 ## Prerequisites
 
 1. [SwiftBar](https://github.com/swiftbar/SwiftBar) installed (`brew install --cask swiftbar`).
-2. `claude-usage-monitor` built and configured (see the [main README](../README.md)). The plugin invokes it with `--json` to get one usage snapshot.
+2. `claude-usage-monitor` installed with `cargo install --path . --force` and configured (see the [main README](../README.md)). The plugin invokes it with `--json` to get one usage snapshot.
 
 ## Install
 
@@ -23,11 +23,13 @@ ln -s "$(pwd)/swiftbar/claude-usage.2s.sh" \
 chmod +x swiftbar/claude-usage.2s.sh
 ```
 
-The `2s` in the filename tells SwiftBar to refresh every 2 seconds.
+The `2s` in the filename tells SwiftBar to refresh every 2 seconds. `CX13%` means 13% of the Codex weekly allowance has been used; the dropdown spells out “Codex Weekly” and shows its reset countdown. Extra Credits is no longer displayed.
+
+Codex credentials are configured in the TUI with `e` (see the main README). The plugin needs no Codex CLI. A bearer token in **Codex access token** and the matching account ID have been verified to work without cookies. Unavailable providers show `—` instead of 0%, with details in the dropdown; the other provider remains visible. OpenAI HTTP 429 responses temporarily delay Codex requests according to `Retry-After`.
 
 ## How it finds the binary
 
-SwiftBar runs plugins from a `launchd` context with a minimal `PATH` — it does **not** inherit `~/.cargo/bin`, Homebrew paths, or anything from your shell profile. Setting `export` in `~/.zshrc` won't help. You have two options:
+SwiftBar runs plugins from a `launchd` context and does not inherit your shell profile. This plugin explicitly adds `~/.cargo/bin`, `/usr/local/bin`, and `/opt/homebrew/bin` to its `PATH`, so a normal `cargo install --path . --force` is sufficient. For a different install location, use either option below:
 
 **Option A (recommended):** point the plugin directly at the absolute binary path.
 
@@ -56,4 +58,7 @@ Click the menu bar icon. If the plugin can't run the binary, the dropdown now sh
 ## Troubleshooting
 
 - **`claude: ⚠`** in the menu bar → the plugin couldn't run `claude-usage-monitor --json`. Check that the binary is on `PATH` (run `which claude-usage-monitor` from a terminal SwiftBar can see) or set `CLAUDE_USAGE_BIN`.
-- **403 / "auth" errors** → cookies expired. Run `claude-usage-monitor` in a terminal and press `e` to update them.
+- **Claude auth errors** → refresh the Claude cookies in the TUI with `e`.
+- **Codex not configured** → put the bearer token in **Codex access token**, not the Cookie field.
+- **Codex auth errors** → refresh the token and matching account ID. Cookie is optional; see [Codex troubleshooting](../README.md#codex-troubleshooting).
+- **Old Extra Credits display** → update both the binary and this plugin. If the plugin was copied rather than symlinked, copy the updated script into the SwiftBar plugins folder again.

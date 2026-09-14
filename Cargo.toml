@@ -2,7 +2,7 @@
 name = "claude-usage-monitor"
 version = "0.1.0"
 edition = "2021"
-description = "Live TUI dashboard for claude.ai usage (5h / 7d / extra credits)"
+description = "Live TUI dashboard for Claude usage and Codex weekly usage"
 license = "MIT"
 repository = "https://github.com/maxhuntdesign/claude-usage-monitor"
 readme = "README.md"

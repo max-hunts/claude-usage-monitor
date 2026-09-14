@@ -28,6 +28,12 @@ open ClaudeUsageMonitor.app
 
 Drag it into `/Applications` if you want it permanently installed.
 
+## Updating
+
+Run `./scripts/build-app.sh` again after pulling changes, then quit and reopen the app. If you copied the app into `/Applications`, replace that copy with the rebuilt bundle. Installing the terminal command with `cargo install --path . --force` does not update the binary embedded in the `.app`.
+
+The TUI supports both Claude usage and Codex weekly usage. All launch methods share `~/.config/claude-usage-monitor/config.toml`; press `e` to edit credentials. See [Codex credentials](../README.md#codex-credentials) for the verified bearer-token/account-ID setup.
+
 ## What's in the bundle
 
 ```
