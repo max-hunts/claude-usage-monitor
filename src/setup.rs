@@ -21,7 +21,7 @@ const FIELDS: [&str; 7] = [
     "Claude sessionKey",
     "Claude cf_clearance",
     "Claude __cf_bm (optional)",
-    "Codex access token (optional)",
+    "Codex Authorization (paste Bearer + token)",
     "Codex account ID",
     "Codex Cookie header (optional)",
 ];
@@ -76,9 +76,9 @@ impl SetupForm {
                 SetupOutcome::Continue
             }
             KeyCode::Enter => self.try_save(),
+            KeyCode::F(2) => self.clear_field(),
             KeyCode::Char('u') if key.modifiers.contains(KeyModifiers::CONTROL) => {
-                self.values[self.focus].clear();
-                SetupOutcome::Continue
+                self.clear_field()
             }
             KeyCode::Backspace => {
                 self.values[self.focus].pop();
@@ -92,6 +92,12 @@ impl SetupForm {
             }
             _ => SetupOutcome::Continue,
         }
+    }
+
+    fn clear_field(&mut self) -> SetupOutcome {
+        self.values[self.focus].clear();
+        self.status = None;
+        SetupOutcome::Continue
     }
 
     pub fn handle_paste(&mut self, text: String) -> SetupOutcome {
@@ -188,7 +194,7 @@ pub fn render(f: &mut Frame, area: Rect, form: &SetupForm) {
             Style::default().fg(MUTED),
         )),
         Line::from(Span::styled(
-            "Codex: paste access token and account ID from the usage request. Cookie is optional.",
+            "Codex (optional): copy the full Authorization header, including Bearer, and account ID.",
             Style::default().fg(MUTED),
         )),
         Line::from(Span::styled(
@@ -241,7 +247,7 @@ pub fn render(f: &mut Frame, area: Rect, form: &SetupForm) {
     // footer
     f.render_widget(
         Paragraph::new(Line::from(Span::styled(
-            "stored in ~/.config/claude-usage-monitor/config.toml (chmod 600)",
+            "F2 / Ctrl+U: clear field  ·  Tab: next  ·  Enter: save",
             Style::default().fg(MUTED),
         )))
         .alignment(Alignment::Center)
@@ -270,13 +276,20 @@ fn render_field(f: &mut Frame, area: Rect, label: &str, value: &str, focused: bo
     let cursor = if focused { "▏" } else { "" };
     let border_color = if focused { ACCENT } else { MUTED };
 
-    let block = Block::default()
+    let mut block = Block::default()
         .borders(Borders::ALL)
         .border_style(Style::default().fg(border_color).bg(BG))
         .title(Span::styled(
             format!(" {} ", label),
             Style::default().fg(if focused { FG } else { MUTED }),
         ));
+
+    if focused {
+        block = block.title_bottom(Line::from(Span::styled(
+            " F2 / Ctrl+U: clear field ",
+            Style::default().fg(ACCENT),
+        )));
+    }
 
     let inner = block.inner(area);
     f.render_widget(block, area);
@@ -326,10 +339,30 @@ mod tests {
                 .map(|cell| cell.symbol())
                 .collect::<String>();
             assert!(text.contains(FIELDS[focus]));
+            assert!(text.contains("F2 / Ctrl+U: clear field"));
             assert!(!text.contains("secret-access-token"));
             assert!(!text.contains("sëcret-cookie"));
         }
         form.handle_key(KeyEvent::new(KeyCode::Char('u'), KeyModifiers::CONTROL));
         assert!(form.values[6].is_empty());
+    }
+    #[test]
+    fn clear_shortcuts_only_clear_focused_field_and_allow_replacement() {
+        for key in [
+            KeyEvent::new(KeyCode::F(2), KeyModifiers::NONE),
+            KeyEvent::new(KeyCode::Char('u'), KeyModifiers::CONTROL),
+        ] {
+            let mut form = SetupForm::new(None);
+            form.focus = 4;
+            form.values[4] = "old-token".repeat(1000);
+            form.values[5] = "keep-account".into();
+            form.status = Some(("old error".into(), true));
+            form.handle_key(key);
+            assert!(form.values[4].is_empty());
+            assert_eq!(form.values[5], "keep-account");
+            assert!(form.status.is_none());
+            form.handle_paste("replacement-token".into());
+            assert_eq!(form.values[4], "replacement-token");
+        }
     }
 }

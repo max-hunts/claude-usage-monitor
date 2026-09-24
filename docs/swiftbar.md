@@ -25,7 +25,7 @@ chmod +x swiftbar/claude-usage.2s.sh
 
 The `2s` in the filename tells SwiftBar to refresh every 2 seconds. `CX13%` means 13% of the Codex weekly allowance has been used; the dropdown spells out “Codex Weekly” and shows its reset countdown. Extra Credits is no longer displayed.
 
-Codex credentials are configured in the TUI with `e` (see the main README). The plugin needs no Codex CLI. A bearer token in **Codex access token** and the matching account ID have been verified to work without cookies. Unavailable providers show `—` instead of 0%, with details in the dropdown; the other provider remains visible. OpenAI HTTP 429 responses temporarily delay Codex requests according to `Retry-After`.
+Codex credentials are configured in the TUI with `e` (see the main README). The plugin needs no Codex CLI. A bearer token in **Codex Authorization** and the matching account ID have been verified to work without cookies. Unavailable providers show `—` instead of 0%, with details in the dropdown; the other provider remains visible. OpenAI HTTP 429 responses temporarily delay Codex requests according to `Retry-After`.
 
 ## How it finds the binary
 
@@ -59,6 +59,6 @@ Click the menu bar icon. If the plugin can't run the binary, the dropdown now sh
 
 - **`claude: ⚠`** in the menu bar → the plugin couldn't run `claude-usage-monitor --json`. Check that the binary is on `PATH` (run `which claude-usage-monitor` from a terminal SwiftBar can see) or set `CLAUDE_USAGE_BIN`.
 - **Claude auth errors** → refresh the Claude cookies in the TUI with `e`.
-- **Codex not configured** → put the bearer token in **Codex access token**, not the Cookie field.
+- **Codex not configured** → put the bearer token in **Codex Authorization**, not the Cookie field.
 - **Codex auth errors** → refresh the token and matching account ID. Cookie is optional; see [Codex troubleshooting](../README.md#codex-troubleshooting).
 - **Old Extra Credits display** → update both the binary and this plugin. If the plugin was copied rather than symlinked, copy the updated script into the SwiftBar plugins folder again.

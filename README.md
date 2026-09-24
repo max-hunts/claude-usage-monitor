@@ -74,13 +74,13 @@ Paste each into its field on the setup screen. Tab cycles fields, Enter saves.
 
 | Monitor field | Request header | What to paste |
 |---|---|---|
-| **Codex access token** | `authorization` | The full value; either `Bearer …` or the token alone is accepted. |
+| **Codex Authorization** | `authorization` | Copy the entire value, including the `Bearer ` prefix: `Bearer eyJ…`. |
 | **Codex account ID** | `chatgpt-account-id` | The account/workspace ID used by this request. |
 | **Codex Cookie header (optional)** | `cookie` | Leave blank initially. Only add the complete Cookie header if required. |
 
-**The bearer token belongs in Codex access token, not in the Cookie field.** Press **Enter** to save. The token and account ID together have been verified against the live endpoint without a Cookie header; cookie-only authentication has not been verified.
+**Paste the complete Authorization value (`Bearer …`) into Codex Authorization, not into the Cookie field.** The parser also accepts a token without the prefix for compatibility. Press **Enter** to save. The token and account ID together have been verified against the live endpoint without a Cookie header; cookie-only authentication has not been verified.
 
-These are session credentials, not an OpenAI Platform API key. Paste the full values directly into the local setup form. Token and cookie fields are masked; **Ctrl+U** clears the focused field. The form scrolls to keep the focused field visible.
+These are session credentials, not an OpenAI Platform API key. Paste the full values directly into the local setup form. Token and cookie fields are masked; **F2** or **Ctrl+U** instantly clears the focused field; the shortcut is shown on the selected field and in the footer. The form scrolls to keep the focused field visible.
 
 Within a couple of seconds, **Codex Weekly** should show the percentage **used** and the next reset time. For example, a browser showing 81% remaining should correspond to 19% in the monitor. On the tested account, the API returns a weekly primary window and a null secondary window. The monitor selects the weekly window by duration, so accounts reporting it in the secondary slot also work.
 
@@ -129,7 +129,7 @@ If OpenAI returns HTTP 429, the monitor respects `Retry-After` (seconds or HTTP 
 
 ### Codex troubleshooting
 
-- **Not configured:** the access-token field is empty. Press `e` and check that the bearer token was not pasted into the optional Cookie field.
+- **Not configured:** the Codex Authorization field is empty. Press `e` and check that the bearer token was not pasted into the optional Cookie field.
 - **Account ID missing:** fill in the account ID from the same browser request as the token.
 - **Auth 401/403:** capture a fresh token and matching account ID. If those still fail, try the browser request's complete Cookie header in the optional field.
 - **Weekly limit unavailable:** the response did not contain a 7-day window. The monitor shows unavailable rather than a misleading 0%.
@@ -148,7 +148,7 @@ If OpenAI returns HTTP 429, the monitor respects `Retry-After` (seconds or HTTP 
 | `e`       | Edit credentials (opens setup)    |
 | `Tab`     | Next field (in setup)             |
 | `Shift+Tab` | Previous field (in setup)       |
-| `Ctrl+U`  | Clear current field (in setup)     |
+| `F2` / `Ctrl+U` | Clear current field instantly (in setup) |
 | `Enter`   | Save (in setup)                   |
 | `Esc`     | Cancel setup / quit               |
 
