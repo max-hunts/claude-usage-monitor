@@ -1,5 +1,7 @@
 # claude-usage-monitor
 
+> **No longer updated here.** As of October 20, 2026, this tool is maintained in a private project, so this repository will not get further fixes or features. The code here still works as it is and stays available under the MIT license.
+
 Claude and Codex usage fetching have been verified with live accounts. Both integrations use internal endpoints, so upstream changes may require updates.
 
 Live terminal dashboard for your [claude.ai](https://claude.ai) usage — 5-hour window, 7-day window, per-model weekly windows (e.g. Fable), and Codex weekly usage — refreshed every 2 seconds.
