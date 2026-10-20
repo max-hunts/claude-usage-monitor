@@ -38,6 +38,9 @@ impl ApiClient {
     }
 
     pub fn fetch_claude(&self) -> Result<Value> {
+        if !self.cfg.has_claude() {
+            return Err(anyhow!("not configured — press e to add credentials"));
+        }
         self.runtime.block_on(async {
             let mut cookie = format!(
                 "sessionKey={}; cf_clearance={}",

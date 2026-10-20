@@ -48,8 +48,12 @@ impl Config {
         toml::from_str(&text).ok()
     }
 
+    /// The saved config with environment overrides applied. Either provider may be set
+    /// up alone; None only when neither Claude nor Codex has credentials.
     pub fn load() -> Option<Self> {
-        let mut cfg = Self::from_file().or_else(Self::from_env)?;
+        let mut cfg = Self::from_file()
+            .or_else(Self::from_env)
+            .unwrap_or_default();
         if let Some(env) = Self::from_env() {
             cfg.org_id = env.org_id;
             cfg.session_key = env.session_key;
@@ -69,7 +73,17 @@ impl Config {
                 };
             }
         }
-        Some(cfg)
+        (cfg.has_claude() || cfg.has_codex()).then_some(cfg)
+    }
+
+    pub fn has_claude(&self) -> bool {
+        !self.org_id.trim().is_empty() && !self.session_key.trim().is_empty()
+    }
+
+    pub fn has_codex(&self) -> bool {
+        self.codex_access_token
+            .as_deref()
+            .is_some_and(|token| !token.trim().is_empty())
     }
 
     pub fn save(&self) -> Result<PathBuf> {
@@ -100,6 +114,17 @@ impl Config {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn codex_alone_counts_as_configured() {
+        let cfg = Config {
+            codex_access_token: Some("token".into()),
+            ..Default::default()
+        };
+        assert!(!cfg.has_claude());
+        assert!(cfg.has_codex());
+        assert!(!Config::default().has_claude() && !Config::default().has_codex());
+    }
 
     #[test]
     fn existing_claude_config_still_loads() {
